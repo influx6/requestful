@@ -20,7 +20,7 @@ class RequestAbort extends Exception{
       buff.write('\n');
       buff.add('Event: ${this.event}');
       buff.write('\n');
-      buff.add(this.stackTrace);
+      /*buff.add(this.stackTrace);*/
       return buff.toString();
     }
 }
@@ -36,7 +36,7 @@ class RequestDisrupt extends Exception{
       buff.write('\n');
       buff.add('Event: ${this.event}');
       buff.write('\n');
-      buff.add(this.stackTrace);
+      /*buff.add(this.stackTrace);*/
       return buff.toString();
     }
 }
