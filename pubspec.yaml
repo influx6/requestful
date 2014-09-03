@@ -6,5 +6,4 @@ description: a simple,async control library for client and server side HttpReque
 dependencies:
    browser: any
    hub: any
-   rio: any
    path: any
