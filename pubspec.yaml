@@ -1,21 +1,10 @@
-name: tagdb
+name: requestful
 author: Alexander Ewetumo <trinoxf@gmail.com>
-homepage: http://github.com/influx6/tagdb
+homepage: http://github.com/influx6/requestful
 version: 0.0.1
-description: 'db definition capable of handling different backends'
+description: a simple,async control library for client and server side HttpRequest and HttpClientRequest
 dependencies:
-   mongo_dart: any
-   redis_client: any
-   couchclient: any
    browser: any
-   unittest: any
-   args: any
-   path: any
    hub: any
    rio: any
-   lawndart: any
-dependency_overrides:
-  rio:
-    path: ../rio
-  hub:
-    path: ../hub
+   path: any
