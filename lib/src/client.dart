@@ -158,55 +158,10 @@ class Requestful extends RequestfulBase{
     return frame;
   }
 
-  RequestFrame _cache(Map conf){
-    var obj = new Element.tag('object');
-    var route = conf['url'].toString();
-    obj.attributes['id'] = ('object'+Hub.randomString(1,2));
-    obj.type = 'text/plain';
-    obj.style.visibility = 'hidden';
-    obj.style.width = obj.style.height = '0px';
-
-    var frame = RequestFrame.create(conf,(fr){
-      return Middleware.create((n){
-        window.document.querySelector('body').append(obj);
-      });
-    },(fr){
-      return Middleware.create((n){
-        fr.$future.complete(n);
-      });
-    },(fr){
-      fr.prefilter.emit(obj);
-    });
-
-
-    obj.addEventListener('loaddata',Funcs.tag('data-ready'));
-
-    obj.onLoad.listen((e){
-        print('object got request $e');
-        var m = window.document.querySelector('#${obj.attributes['id']}');
-        var sc = new ScriptElement();
-        sc.type = 'text/plain';
-        sc.src = route;
-        window.document.body.append(sc);
-        print(m);
-         /*return fr.postfilter.emit(req);*/
-
-    });
-
-    obj.onError.listen((e){
-      frame.$future.completeError(e);
-    });
-
-    obj.data = route;
-    frame.meta.add('req',obj);
-    return frame;
-  }
-
   RequestFrame query(Map m){
    this.processQuery(m);
    if(Valids.match(m['with'],'ajax')) return this._ajax(m);
    if(Valids.match(m['with'],'jsonp')) return this._jsonp(m);
-   if(Valids.match(m['with'],'cache')) return this._cache(m);
    return null;
   }
 
