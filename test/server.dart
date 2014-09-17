@@ -70,14 +70,14 @@ void main(){
       var rd = Requestful.create({});
 
       $.test('requestful created')
-      .rack('is it valid',(f){
+      .rack('is it valid',(f,g){
           Expects.asserts(f,rd);
       }).emit(rd);
 
       rd = null;
 
       $.test('requestful destroyed')
-      .rack('it should be null',(f){
+      .rack('it should be null',(f,g){
           Expects.asserts(f,true);
       }).emit(Valids.notExist(rd));
 
@@ -88,7 +88,7 @@ void main(){
       var rd = Requestful.create({});
 
       $.test('requests')
-      .rackAsync('request client.dart',(f,next){
+      .rackAsync('request client.dart',(f,next,g){
         var client = rd.query({
           'to':'http://localhost:3010/client.dart',
           'with':'get'
@@ -99,7 +99,7 @@ void main(){
         });
 
       })
-     .rackAsync('request root',(f,next){
+     .rackAsync('request root',(f,next,g){
 
           var root = rd.query({
             'to':'http://localhost:3010/',

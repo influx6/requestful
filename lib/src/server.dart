@@ -20,32 +20,32 @@ class Requestful extends RequestfulBase{
    this.processQuery(m);
 
    var frame = RequestFrame.create(m,(fr){
-      return Middleware.create((n){
+      this.client.openUrl(m['with'],m['url']).then((req){
+        fr.meta.add('req',req);
+        fr.filter('prefilter').emit(req);
+      },onError:fr.$future.completeError);
+   });
+
+    frame.addfilter('prefilter',Middleware.create((n){
         n.close().then((res){
-          fr.postfilter.emit(res);
+          frame.filter('postfilter').emit(res);
         });
-      });
-    },(fr){
-      return Middleware.create((n){
+    }));
+  
+    frame.addfilter('postfilter',Middleware.create((n){
         var data = [];
         n.listen((d){
           data.addAll(d is List ? d : [d]);
         },onDone:(){
-          if(!fr.$future.isCompleted) 
-            return fr.$future.complete(UTF8.decode(data));
+          if(!frame.$future.isCompleted) 
+            return frame.$future.complete(UTF8.decode(data));
         },onError:(e){
-          if(!fr.$future.isCompleted) 
-            return fr.$future.completeError(e);
+          if(!frame.$future.isCompleted) 
+            return frame.$future.completeError(e);
         });
+    }));
 
-      });
-    },(fr){
-      this.client.openUrl(m['with'],m['url']).then((req){
-        fr.prefilter.emit(req);
-      },onError:fr.$future.completeError);
-    });
-
-    frame.meta.add('req',client);
+    frame.meta.add('client',client);
     return frame;
   }
 

@@ -13,7 +13,7 @@ void main(){
         var rd = Requestful.create({});
 
         $.test('checking if requests is created')
-        .rack('is it valid',(f){
+        .rack('is it valid',(f,g){
           Expects.asserts(Valids.exist(rd),true);
         }).emit(rd);
 
@@ -24,7 +24,7 @@ void main(){
         var rd = Requestful.create({});
 
         $.test('requests a resource')
-        .rackAsync('request client.dart with ajax',(f,next){
+        .rackAsync('request client.dart with ajax',(f,next,g){
           var frame  = f.query({
             'to':"http://127.0.0.1:3010/client.dart",
             'with':'ajax',
@@ -45,10 +45,11 @@ void main(){
         var rd = Requestful.create({});
 
         $.test('requests a resource with cache')
-        .rack('request client.dart using cache',(f){
+        .rack('request client.dart using cache',(f,g){
           var frame = f.query({
             'to':"http://127.0.0.1:3010/love.txt",
-            'with':'cache',
+            'with':'ajax',
+            'method':'get'
           });
 
           frame.init().then(print).catchError(print);
@@ -60,7 +61,7 @@ void main(){
         var rd = Requestful.create({});
 
         $.test('requests a resource')
-        .rack('request client.dart with jsonp',(f){
+        .rack('request client.dart with jsonp',(f,g){
 
           var frame = f.query({
             'to':"http://127.0.0.1:3010/love.txt",

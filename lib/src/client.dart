@@ -9,11 +9,13 @@ import 'package:path/path.dart' as path;
 
 part 'base.dart';
 
-class RequestAbort extends Exception{
+class RequestAbort implements Exception{
+    final message;
     HttpRequest req;
     Event event;
+    
 
-    RequestAbort(message,this.req,[this.event]): super(message);
+    RequestAbort(this.message,this.req,[this.event]);
     String toString(){
       var buf = new StringBuffer();
       buff.add('Message: ${this.message}');
@@ -25,11 +27,12 @@ class RequestAbort extends Exception{
     }
 }
 
-class RequestDisrupt extends Exception{
+class RequestDisrupt implements Exception{
+    final message; 
     HttpRequest req;
     Event event;
 
-    RequestDisrupt(message,this.req,[this.event]): super(message);
+    RequestDisrupt(this.message,this.req,[this.event]);
     String toString(){
       var buf = new StringBuffer();
       buff.add('Message: ${this.message}');
@@ -42,10 +45,13 @@ class RequestDisrupt extends Exception{
 }
 
 class Requestful extends RequestfulBase{
+  MapDecorator socketFrames;
 
   static create([m]) => new Requestful(m);
 
-  Requestful([m]): super(m);
+  Requestful([m]): super(m){
+    this.socketFrames = new MapDecorator<String,RequestFrame>();
+  }
 
   void validateQuery(Map m){
     if(!m.containsKey('to') && !m.containsKey('with'))
@@ -82,34 +88,34 @@ class Requestful extends RequestfulBase{
     });
 
     var frame = RequestFrame.create(conf,(fr){
-      return Middleware.create((n){
+      fr.filter('prefilter').emit(req);
+    });
+    
+    frame.addfilter('prefilter',Middleware.create((n){
         req.onReadyStateChange.listen((e){
          event = e;
          var status = req.status;
          if(req.readyState == 4){
            if(status >= 200 || status <= 300 || status == 304)
-             return fr.postfilter.emit(req);
+             return frame.filter('postfilter').emit(req);
          }
         });
         req.send(conf['data']);
-      });
-    },(fr){
-      return Middleware.create((n){
-          if(fr.$future.isCompleted) return null;
-          var text = req.responseText,
-              xml = req.responseXml;
+    }));
 
-          var data = Valids.exist(xml) ? xml : text;
-          fr.$future.complete({
-            'state':true,
-            'event': event,
-            'req': req,
-            'data': data,
-          });
+    frame.addfilter('postfilter',Middleware.create((n){
+      if(frame.$future.isCompleted) return null;
+      var text = req.responseText,
+          xml = req.responseXml;
+
+      var data = Valids.exist(xml) ? xml : text;
+      frame.$future.complete({
+        'state':true,
+        'event': event,
+        'req': req,
+        'data': data,
       });
-    },(fr){
-      fr.prefilter.emit(req);
-    });
+    }));
 
     req.open(conf['method'],conf['url'].toString());
     frame.meta.add('req',req);
@@ -126,18 +132,18 @@ class Requestful extends RequestfulBase{
     script.attributes['cid'] = cid;
 
     var frame = RequestFrame.create(conf,(fr){
-      return Middleware.create((n){
-        window.document.querySelector('head').append(script);
-      });
-    },(fr){
-      return Middleware.create((n){
-        fr.$future.complete(n);
-      });
-    },(fr){
-      fr.prefilter.emit(script);
+      fr.filter('prefilter').emit(script);
     });
+    
+    frame.addfilter('prefilter',Middleware.create((n){
+        window.document.querySelector('head').append(script);
+    }));
 
-    ft.future.then(frame.postfilter.emit).catchError((e){
+    frame.addfilter('postfilter',Middleware.create((n){
+        frame.$future.complete(n);
+    }));
+
+    ft.future.then(frame.filter('postfilter').emit).catchError((e){
       frame.$future.completeError(e);
     });
 

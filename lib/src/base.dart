@@ -6,21 +6,20 @@ abstract class RBase{
 
 class RequestFrame{
   final MapDecorator meta = MapDecorator.create();
-  Middleware prefilter,postfilter;
+  final MapDecorator filterStore = new MapDecorator<String,Middleware>();
   final Function initFn;
   Completer $future;
 
-  static create(q,n,f,m) => new RequestFrame(q,n,f,m);
+  static create(q,f,[m]) => new RequestFrame(q,f,m);
 
-  RequestFrame(Map q,Middleare prefn(n),Middleware postfn(n),this.initFn){
-    this.prefilter = prefn(this);
-    this.postfilter = postfn(this);
+  RequestFrame(Map q,this.initFn,[Function filterFn]){
     this.$future = new Completer();
     this.meta.add('query',q);
-
-    this.prefilter.ware((r,nxt,end){ nxt(); });
-    this.postfilter.ware((r,nxt,end){ nxt(); });
+    if(Valids.exist(filterFn)) filterFn(this);
   }
+
+  Middleware filter(String n) => this.filterStore.get(n);
+  Middleware addfilter(String n, Middleware fn) => this.filterStore.add(n,fn);
 
   Future init(){
     this.initFn(this);
