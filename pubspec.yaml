@@ -4,6 +4,6 @@ homepage: http://github.com/influx6/requestful
 version: 0.0.4
 description: a simple,async control library for client and server side HttpRequest and HttpClientRequest
 dependencies:
-   browser: any
-   hub: any
-   path: any
+  browser: any
+  hub: any
+  path: any
